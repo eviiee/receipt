@@ -2,6 +2,8 @@
 
 import React, { useState } from 'react';
 import styles from './bill.module.css';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const Bill = () => {
   const [htmlInput, setHtmlInput] = useState('');
@@ -10,16 +12,15 @@ const Bill = () => {
     const parser = new DOMParser();
     const doc = parser.parseFromString(htmlInput, 'text/html');
 
-    // search_container class 중 첫 번째 div의 첫 번째 child table
     const searchContainer = doc.querySelector('div.search_container');
     if (!searchContainer) {
-      alert('search_container를 찾을 수 없습니다.');
+      toast.error('❌ search_container를 찾을 수 없습니다.');
       return;
     }
 
     const table = searchContainer.querySelector('table');
     if (!table) {
-      alert('table을 찾을 수 없습니다.');
+      toast.error('❌ table을 찾을 수 없습니다.');
       return;
     }
 
@@ -28,7 +29,6 @@ const Bill = () => {
 
     rows.forEach((row, index) => {
       if (index % 2 === 1) {
-        console.log(index)
         const cells = row.querySelectorAll('td');
         if (cells.length < 10) return;
 
@@ -48,12 +48,16 @@ const Bill = () => {
       }
     });
 
+    if (extractedData.length === 0) {
+      toast.warning('⚠️ 추출된 데이터가 없습니다.');
+      return;
+    }
+
     const finalText = extractedData.join('\n');
 
-    alert(finalText)
     navigator.clipboard.writeText(finalText)
-      .then(() => alert('데이터가 클립보드에 복사되었습니다. 엑셀에 붙여넣으세요.'))
-      .catch(() => alert('클립보드 복사에 실패했습니다.'));
+      .then(() => toast.success('데이터가 클립보드에 복사되었습니다. 엑셀에 붙여넣으세요.'))
+      .catch(() => toast.error('클립보드 복사에 실패했습니다.'));
   };
 
   return (
@@ -67,6 +71,9 @@ const Bill = () => {
       <button className={styles.button} onClick={handleExtract}>
         추출
       </button>
+
+      {/* Toast Container */}
+      <ToastContainer position="top-center" autoClose={3000} />
     </div>
   );
 };
